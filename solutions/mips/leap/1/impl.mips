@@ -1,0 +1,47 @@
+## Registers
+
+# | Register | Usage     | Type    | Description                                      |
+# | -------- | --------- | ------- | ------------------------------------------------ |
+# | `$a0`    | input     | integer | year to check                                    |
+# | `$v0`    | output    | boolean | input is leap year (`0` = `false`, `1` = `true`) |
+# | `$t0-9`  | temporary | any     | used for temporary storage                       |
+
+.globl is_leap_year
+
+is_leap_year:
+        # 1. Divisible by 100? then go to next
+        # 2. Divisible by 400?
+        # 3. Divisible by 4?
+
+        add $t0, $a0, $zero
+        ori $t1, $zero, 100
+        ori $t2, $zero, 400
+        ori $t3, $zero, 4
+        ori $t4, $zero, 1
+        
+        div $t0, $t1
+        mfhi $t0
+        bne $t0, $zero, divbyfour
+        add $t0, $a0, $zero
+        div $t0, $t2
+        mfhi $t0
+        beq $t0, $zero, result_true
+        j result_false
+
+divbyfour:
+        add $t0, $a0, $zero
+        div $t0, $t3
+        mfhi $t0
+        beq $t0, $zero, result_true
+        j result_false
+
+result_true:
+        add $v0, $zero, $t4
+        j end
+
+result_false:
+        add $v0, $zero, $zero
+        j end
+
+end:
+        jr $ra
