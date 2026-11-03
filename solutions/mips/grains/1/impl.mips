@@ -1,0 +1,36 @@
+# | Register | Usage     | Type    | Description                      |
+# | -------- | --------- | ------- | -------------------------------- |
+# | `$a0`    | input     | integer | square number in the range 1..64 |
+# | `$v0`    | output    | integer | low 32 bits of output            |
+# | `$v1`    | output    | integer | high 32 bits of output           |
+# | `$t0-9`  | temporary | any     | for temporary storage            |
+
+.globl square
+
+square:
+        ori $t1, $zero, 1
+        ori $t8, $zero, 64
+        slt $t9, $a0, $t1          # n < 1 ?
+        bne $t9, $zero, invalid
+        slt $t9, $t8, $a0          # 64 < n ?
+        bne $t9, $zero, invalid
+
+        ori $v0, $zero, 1          # lo = 1
+        add $v1, $zero, $zero      # hi = 0
+        add $t3, $zero, $t1        # i = 1
+loop:
+        slt $t5, $t3, $a0          # i < n ?
+        beq $t5, $zero, exit
+        addu $t6, $v0, $v0         # newlo = lo + lo
+        sltu $t7, $t6, $v0         # carry
+        addu $v1, $v1, $v1         # hi = hi * 2
+        addu $v1, $v1, $t7         # hi += carry
+        add $v0, $t6, $zero        # lo = newlo
+        add $t3, $t3, $t1          # ++i
+        j loop
+
+invalid:
+        add $v0, $zero, $zero      # lo = 0
+        add $v1, $zero, $zero      # hi = 0
+exit:
+        jr $ra
