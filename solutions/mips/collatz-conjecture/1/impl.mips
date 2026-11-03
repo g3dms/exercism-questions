@@ -1,0 +1,42 @@
+# | Register | Usage     | Type    | Description                                       |
+# | -------- | --------- | ------- | ------------------------------------------------- |
+# | `$a0`    | input     | integer | starting number                                   |
+# | `$v0`    | output    | integer | expected number of steps, -1 if number is invalid |
+# | `$t0-9`  | temporary | any     | used for temporary storage                        |
+
+.globl  steps
+
+steps:
+        add $t0, $zero, $zero
+        slt $t1, $t0, $a0
+        beq $t1, $zero, invalid
+        ori $t1, $zero, 1
+        ori $t2, $zero, 2
+        ori $t3, $zero, 3
+
+        add $t4, $a0, $zero        # t4 = input
+        add $v0, $zero, $zero
+
+check:
+        beq $t4, $t1, end
+        add $v0, $v0, $t1
+        div $t4, $t2
+        mfhi $t5
+        beq $t5, $zero, is_even
+        j is_odd
+
+is_even:
+        div $t4, $t2
+        mflo $t4
+        j check
+
+is_odd:
+        mult $t4, $t3
+        mflo $t4
+        add $t4, $t4, $t1
+        j check 
+
+invalid:
+        ori $v0, $zero, -1
+end: 
+        jr $ra
