@@ -1,0 +1,93 @@
+# | Register | Usage        | Type    | Description                   |
+# | -------- | ------------ | ------- | ----------------------------- |
+# | `$a0`    | input        | integer | given number                  |
+# | `$a1`    | input/output | address | null-terminated result string |
+# | `$t0-9`  | temporary    | any     | for temporary storage         |
+
+.globl raindrops
+
+raindrops:
+        ori $t3, $zero, 3
+        ori $t5, $zero, 5
+        ori $t7, $zero, 7
+        add $t1, $zero, $zero      # flag: any word written?
+        add $t2, $zero, $a1        # write pointer
+
+div_by_three:
+        div $a0, $t3
+        mfhi $t0
+        bne $t0, $zero, div_by_five
+        ori $t1, $zero, 1
+        ori $t0, $zero, 80
+        sb $t0, 0($t2)             # P
+        ori $t0, $zero, 108
+        sb $t0, 1($t2)             # l
+        ori $t0, $zero, 105
+        sb $t0, 2($t2)             # i
+        ori $t0, $zero, 110
+        sb $t0, 3($t2)             # n
+        ori $t0, $zero, 103
+        sb $t0, 4($t2)             # g
+        addi $t2, $t2, 5
+
+div_by_five:
+        div $a0, $t5
+        mfhi $t0
+        bne $t0, $zero, div_by_seven
+        ori $t1, $zero, 1
+        ori $t0, $zero, 80
+        sb $t0, 0($t2)             # P
+        ori $t0, $zero, 108
+        sb $t0, 1($t2)             # l
+        ori $t0, $zero, 97
+        sb $t0, 2($t2)             # a
+        ori $t0, $zero, 110
+        sb $t0, 3($t2)             # n
+        ori $t0, $zero, 103
+        sb $t0, 4($t2)             # g
+        addi $t2, $t2, 5
+
+div_by_seven:
+        div $a0, $t7
+        mfhi $t0
+        bne $t0, $zero, check
+        ori $t1, $zero, 1
+        ori $t0, $zero, 80
+        sb $t0, 0($t2)             # P
+        ori $t0, $zero, 108
+        sb $t0, 1($t2)             # l
+        ori $t0, $zero, 111
+        sb $t0, 2($t2)             # o
+        ori $t0, $zero, 110
+        sb $t0, 3($t2)             # n
+        ori $t0, $zero, 103
+        sb $t0, 4($t2)             # g
+        addi $t2, $t2, 5
+
+check:
+        beq $t1, $zero, not_div
+        sb $zero, 0($t2)           # null terminator
+        jr $ra
+
+not_div:
+        ori $t9, $zero, 10
+        add $t0, $a0, $zero
+        add $t6, $zero, $zero      # digit count
+count_loop:
+        div $t0, $t9
+        mflo $t0
+        addi $t6, $t6, 1
+        bne $t0, $zero, count_loop
+
+        add $t4, $t2, $t6          # end of digits
+        sb $zero, 0($t4)           # null terminator
+        add $t0, $a0, $zero
+write_loop:
+        addi $t4, $t4, -1
+        div $t0, $t9
+        mfhi $t5                   # last digit
+        mflo $t0
+        addi $t5, $t5, 48          # to ASCII
+        sb $t5, 0($t4)
+        bne $t0, $zero, write_loop
+        jr $ra
