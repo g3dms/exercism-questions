@@ -1,0 +1,41 @@
+# | Register | Usage     | Type    | Description                   |
+# | -------- | --------- | ------- | ----------------------------- |
+# | `$a0`    | input     | address | array of factor words         |
+# | `$a1`    | input     | integer | number of factors             |
+# | `$a2`    | input     | integer | limit                         |
+# | `$v0`    | output    | integer | sum of multiples within limit |
+# | `$t0-9`  | temporary | any     | used for temporary storage    |
+
+.globl sum
+
+sum:
+        add $v0, $zero, $zero      # total = 0
+        ori $t1, $zero, 1          # constant 1
+        ori $t2, $zero, 4          # constant 4
+        add $t0, $zero, $t1        # n = 1
+n_loop:
+        slt $t3, $t0, $a2          # n < limit ?
+        beq $t3, $zero, exit
+        add $t4, $zero, $zero      # i = 0
+        add $t5, $a0, $zero        # pointer to factors[0]
+f_loop:
+        slt $t3, $t4, $a1          # i < number of factors ?
+        beq $t3, $zero, next_n     # no factor divided n
+        lw  $t6, 0($t5)            # f = factors[i]
+        beq $t6, $zero, next_f     # skip factor 0
+        div $t0, $t6
+        mfhi $t7                   # n % f
+        beq $t7, $zero, add_n      # divisible, so n counts
+next_f:
+        add $t5, $t5, $t2          # next factor address
+        add $t4, $t4, $t1          # ++i
+        j f_loop
+add_n:
+        add $v0, $v0, $t0          # total += n
+next_n:
+        add $t0, $t0, $t1          # ++n
+        j n_loop
+exit:
+        jr $ra
+
+        
