@@ -1,0 +1,47 @@
+# | Register | Usage     | Type    | Description                |
+# | -------- | --------- | ------- | -------------------------- |
+# | `$a0`    | input     | integer | x                          |
+# | `$a1`    | input     | integer | y                          |
+# | `$v0`    | output    | integer | points earned              |
+# | `$t0-9`  | temporary | any     | used for temporary storage |
+
+.globl score
+
+score:
+        # t0 = x*x, t1 = y*y, t0 = x^2 + y^2
+        mul  $t0, $a0, $a0
+        mul  $t1, $a1, $a1
+        add  $t0, $t0, $t1          # t0 = dist^2
+
+        # if dist^2 <= 1  -> inner (10)
+        ori  $t1, $zero, 1
+        slt  $t9, $t1, $t0          # t9 = (1 < dist^2)  i.e. dist^2 > 1
+        beq  $t9, $zero, inner      # not greater -> dist^2 <= 1
+
+        # if dist^2 <= 25 -> middle (5)
+        ori  $t1, $zero, 25
+        slt  $t9, $t1, $t0
+        beq  $t9, $zero, middle
+
+        # if dist^2 <= 100 -> outer (1)
+        ori  $t1, $zero, 100
+        slt  $t9, $t1, $t0
+        beq  $t9, $zero, outer
+
+        # otherwise: miss
+        add  $v0, $zero, $zero
+        j    end
+
+inner:
+        ori  $v0, $zero, 10
+        j    end
+
+middle:
+        ori  $v0, $zero, 5
+        j    end
+
+outer:
+        ori  $v0, $zero, 1
+
+end:
+        jr   $ra
